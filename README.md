@@ -1,184 +1,94 @@
-# Pelion Device Ready example - Cellular Custom
-## Overview
+# README
 
-This is a cellular application to showcase device management capabilities via [SK telecom](https://www.sktelecom.com/index_en.html) and [LGU+](http://www.uplus.co.kr/home/Index.hpi). Each telecoms are providing LTE Cat.M1(SKT) and NB-IoT(LGU plus) service in S.Korea.
+ 이 문서는 LPWA 기술을 활용한 하드웨어 및 서비스 개발을 주제로 한 [서울 하드웨어 해커톤](https://www.seoulhackathon.org/538) 에 참여한 HelloYellowBus팀의 H/W 및 S/W 코드를 정리한 내용
 
-* For your information; here is mbed-os-example-cellular for BG96(Cat.M1) and TPB23(NB-IoT).
 
-    1. [LGU plus with NB-IoT](https://os.mbed.com/users/Daniel_Lee/code/mbed-os-example-cellular-TPB23/)
-    2. [SKT with Cat.M1](https://os.mbed.com/users/Daniel_Lee/code/mbed-os-example-cellular-BG96/)
 
-* This codes are based on below versions.
+[TOC]
 
-    1. Mbed OS 5.13.1
-    2. Mbed-Cloud-Client 2.2.1
+## HelloYellowBus 
 
----------------------------------------------------------------------------------------------------------------------------------------
+### 서비스 소개
 
-This is a template application to showcase device management capabilities. It demonstrates how to create a simple application that can connect to the Pelion IoT Platform service, register resources and get ready to receive a firmware update.
+Arm mbed에 내장된 GPS, 온도 센서, 승/하차 버튼을 활용해 학생들이 통학버스 승하차시 터치하는 방식의 하드웨어와 전송된 정보를 실시간으로 모니터링 할 수 있는 웹 애플리케이션 서비스
 
-It's intended to be forked and customized to add platform-specific features (such as sensors and actuators) and configure the connectivity and storage to work **out-of-the-box**. The template application works in **developer mode** by default.
+- 통학버스 안전사고 문제에 있어, 저비용으로 효과적인 예방책 및 해결책 제시
+- 기존 차량의 구조적인 변화 없이 기존 교육부이 도입한 시스템에 비해 실효성 측면에서 경쟁력 확보
 
-There is a mirror version of the stable (master) template application on [this location](https://os.mbed.com/teams/mbed-os-examples/code/pelion-ready-example) to facilitate the fork and publish on https://os.mbed.com.
 
-## Board specific example applications
 
-  There are a number of applications that make usage of the Simple Pelion DM Client library.
+### 구조도 
 
-  The Pelion [Quick-Start](https://cloud.mbed.com/quick-start) is an initiative to support Mbed Partner's platforms while delivering a great User Experience to Mbed Developers.
-  
-  In terms of cellular, operation tested with [DISCO-L475VG-IOT01A](https://os.mbed.com/platforms/ST-Discovery-L475E-IOT01A/)
-    
-## Getting started with the application
+![gozodo]()
 
-This is a summary of the process for developers to get started and get a device connected to Pelion Device Management.
+## 개발일정
 
-### Using Mbed Online IDE
+- 기술 워크숍 (19.12.14 ~ 12.29)
 
-1. Import the application into the Online IDE.
-2. Add the API key to establish connection.
-3. Install the developer certificate.
-4. Compile and program.
+  - 1주차
 
-### Using Mbed CLI
+    - arm Mbed의 기본 센서 활용  
+    - wifi 망를 이용한 Pelion(Cloud system)과의 연동
 
-1. Import the application into your desktop:
+  - 2주차
 
-    ```
-    mbed import https://github.com/DanielDmlee/pelion-ready-example.git
-    cd pelion-ready-example
-    ```
-    * Choose dedicate cellulare configuration:
-    
-    ```
-    cp mbed_app_LGU_NBIoT.json mbed_app.json
-    ```
-    or
-    ```
-    cp mbed_app_SKT_CatM1.json mbed_app.json
-    ```
+    - LPWA 기술 활용을 위한 통신 쉴드(NB-IoT, Cat.M1) 사용법
+    - cellular 망을 이용한 Pelion과의 연동 
 
-2. Configure the API key for your Pelion Portal account.
+  - 3주차 : 클라우드 (The-K system) 
 
-     If you don't have an API key available, then login in [Pelion IoT Platform portal](https://portal.mbedcloud.com/), navigate to 'Access Management', 'API keys' and create a new one. Then specify the API key as global `mbed` configuration:
+    - http을 이용한 The-k system과의 연동
 
-    ```
-    mbed config -G CLOUD_SDK_API_KEY <your-api-key>
-    ```
+      
 
-3. Install the device management certificate:
+- 하드웨어 해커톤 (20.1.4 ~ 20.1.5)
 
-    ```
-    mbed dm init -d "company.com" --model-name "product-model" -q --force
-    ```
+  - H/W
 
-4. Compile and program:
+    - 승/하차를 위한 Button 연결
+    - GPS 연결 및 위치 정보 수집
+    - Cat.M1 모듈을 활용해, mbed 보드와 Cloud(Things park, Pelion) Cellular로 연결   
 
-    ```
-    mbed compile -t <toolchain> -m <target> -f
-    ```
+  - S/W
 
-#### Update the application logic
+    - HelloYellowBus 웹 애플리케이션 기본 기능 구현
+      - 사용자 인증(firebase authentication)
+      - 구글맵 api를 이용해 하드웨어에서 수집한 위치 및 센서 값 시각화
+      - 통학버스차량 근접시 진동알림
 
-The template example uses a ticker object to periodically fire a software interrupt to simulate button presses. Let’s say you want to make an actual button press.
+    - REST API를 통한 Cloud(Things park, Pelion)와 앱과 연동 시도
 
-By default, there is a Ticker object, which fires every five seconds and invokes a callback function:
+      - Pelion과 연동시 겪은 문제점
 
-```cpp
-Ticker timer;
-timer.attach(eventQueue.event(&fake_button_press), 5.0);
-```
+        Pelion의 실시간 response를 받는 전용 서버 구축이 필요.
 
-This callback function changes the `button_res` resource:
+        ( Django [`StreamingHttpResponse`](https://docs.djangoproject.com/en/3.0/ref/request-response/#django.http.StreamingHttpResponse) 객체로 구현 가능)
 
-```cpp
-void fake_button_press() {
-    int v = button_res->get_value_int() + 1;
+      - Things Park
 
-    button_res->set_value(v);
+        Things Park에 response를 받는 전용 서버 구축이 필요(CORS Error)
 
-    printf("Simulated button clicked %d times\n", v);
-}
-```
 
-If you want to change this to an actual button, here is how to do it:
 
-1. Remove:
+## H/W와 S/W repository의 주요 코드
 
-    ```cpp
-    Ticker timer;
-    timer.attach(eventQueue.event(&fake_button_press), 5.0);
-    ```
+### H/W repo
 
-2. Declare an `InterruptIn` object on the button, and attach the callback function to the `fall` handler:
 
-    ```cpp
-    InterruptIn btn(BUTTON1);
-    btn.fall(eventQueue.event(&fake_button_press), 5.0);
-    ```
 
-3. Rename `fake_button_press` to `real_button_press`.
+이 코드는 `Pelion Device Ready example` 를 기반으로 작성했습니다. 
 
-## Enabling firmware updates
+[띵스파크 http 연동 참고 코드](https://os.mbed.com/users/master_k1/code/thingspark-example/)
 
-Mbed OS 5.10 and Mbed CLI 1.9 simplifies the process to enable and perform Firmware Updates. Here is a summary on how to configure the device and verify its correct behaviour.
 
-For full documentation about bootloaders and firmware update, read the following documents:
 
-- [Introduccion to bootloaders](https://os.mbed.com/docs/latest/porting/bootloader.html)
-- [Creating and using a bootloader](https://os.mbed.com/docs/latest/tutorials/bootloader.html)
-- [Bootloader configuration in Mbed OS](https://os.mbed.com/docs/latest/tools/configuring-tools.html)
-- [Mbed Bootloader for Pelion Device Management Client](https://github.com/ARMmbed/mbed-bootloader)
-- [Updating devices with Arm Mbed CLI](https://os.mbed.com/docs/latest/tools/cli-update.html)
 
-This is a summary to use Arm Mbed OS managed bootloaders.
 
-#### Verifying that firmware update works
+### S/W repo
 
-Follow these steps to generate a manifest, compile and perform a firmware update of your device:
 
-1. Configure the API key for your Pelion account.
 
-     If you don't have an API key available, then login in [Pelion IoT Platform portal](https://portal.mbedcloud.com/), navigate to 'Access Management', 'API keys' and create a new one. Then specify the API key as global `mbed` configuration:
 
-    ```
-    mbed config -G CLOUD_SDK_API_KEY <your-api-key>
-    ```
 
-2. Initialize the device management feature:
+- 
 
-    ```
-    mbed dm init -d "company.com" --model-name "product-model" -q --force
-    ```
-
-3. Compile the application, include the firware update credentials generated before, merge with the bootloader and program the device:
-
-    ```
-    mbed compile -t <toolchain> -m <target> -c -f
-    ```
-
-4. Open a serial terminal, verify the application boots and is able to register to the Device Management service. Write down the `<endpoint ID>`, as it's required to identify the device to perform a firmware update.
-
-5. Update the firmware of the device through Mbed CLI:
-
-    ```
-    mbed dm update device -D <device ID> -t <toolchain> -m <target>
-    ```
-
-    Inspect the logs on the device to see the update progress. It should look similar to:
-
-    ```
-    Firmware download requested
-    Authorization granted
-    Downloading: [+++- ] 6 %
-    ```
-
-    When the download completes, the firmware is verified. If everything is OK, the firmware update is applied, the device reboots and attemps to connect to the Device Management service again. The `<endpoint ID>` should be preserved.
-
-## Automated testing
-
-The Simple Pelion Client provides Greentea tests to confirm your platform works as expected. The network and storage configuration is already defined in Mbed OS 5.10, but you may want to override the configuration in `mbed_app.json`.
-
-For details on Simple Pelion Client testing, refer to the documentation [here](https://github.com/ARMmbed/simple-mbed-cloud-client#testing).
-
-This template application contains a working application and tests passing for the `K64F` and `K66F` platforms.
